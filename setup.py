@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="shortterm-memory",
-    version="0.1.0",
+    version='{{VERSION_PLACEHOLDER}}',
     author="Tadiello Sébastien",
     author_email="sebastientadiello@gmail.com",
     description="Une approche pour la gestion de la mémoire à court terme dans les chatbots.",
