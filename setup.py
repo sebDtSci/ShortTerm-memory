@@ -1,5 +1,8 @@
 from setuptools import setup, find_packages
 
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
+
 setup(
     name="shortterm-memory",
     version='{{VERSION_PLACEHOLDER}}',
@@ -11,6 +14,7 @@ setup(
     url="https://github.com/sebDtSci/ShortTerm-memory",
     packages=find_packages('src'),
     package_dir={'': 'src'},
+    install_requires=requirements,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
