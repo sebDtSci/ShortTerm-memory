@@ -1,12 +1,15 @@
 # Introduction
 
-Nous présentons ici une approche pour la gestion de la mémoire à court terme dans les chatbots, en utilisant une combinaison de techniques de stockage et de résumé automatique pour optimiser le contexte conversationnel. La méthode introduite repose sur une structure de mémoire dynamique qui limite la taille des données tout en préservant les informations essentielles à travers des résumés intelligents. Cette approche permet non seulement d'améliorer la fluidité des interactions mais aussi d'assurer une continuité contextuelle lors de longues sessions de dialogue. En outre, l'utilisation de techniques asynchrones garantit que les opérations de gestion de la mémoire n'interfèrent pas avec la réactivité du chatbot.
+We present here an approach for managing short-term memory in chatbots, using a combination of storage techniques and automatic summarization to optimize conversational context. The introduced method relies on a dynamic memory structure that limits data size while preserving essential information through intelligent summaries. This approach not only improves the fluidity of interactions but also ensures contextual continuity during long dialogue sessions. Additionally, the use of asynchronous techniques ensures that memory management operations do not interfere with the chatbot's responsiveness.
 
-# Utilisation du package `shortterm-memory`
+# How to Use the `shortterm-memory` Package
 
-Cette section explique comment utiliser le package `shortterm-memory` pour gérer la mémoire d'un chatbot.
+This section explains how to use the `shortterm-memory` package to manage a chatbot's memory.
 
 ## Installation
+```bash
+pip install torch transformers
+```
 ```bash
 pip install shortterm-memory
 ```
@@ -17,7 +20,7 @@ pip show shortterm-memory
 ```python
 from shortterm_memory.ChatbotMemory import ChatbotMemory
 ```
-## Exemple
+## Usage Exemple
 ```python	
 from shortterm_memory.ChatbotMemory import ChatbotMemory
 
@@ -34,35 +37,37 @@ historique = chat_memory.get_memory()
 print(historique)
 ```
 
-## Fonctionnalités disponibles
-- **update_memory(user_input: str, bot_response: str)** : Met à jour l'historique des conversations avec une nouvelle paire question-réponse.
+## Available Features
 
-- **get_memory()** : Retourne l'historique complet des conversations sous forme de liste.
+- **update_memory(user_input: str, bot_response: str)**: Updates the conversation history with a new question-response pair.
 
-- **memory_counter(conv_hist: list) -> int** : Compte le nombre total de mots dans l'historique des conversations.
+- **get_memory()**: Returns the complete conversation history as a list.
 
-- **compressed_memory(conv_hist: list) -> list** : Comprime l'historique des conversations en utilisant un modèle de résumé.
+- **memory_counter(conv_hist: list) -> int**: Counts the total number of words in the conversation history.
 
-## Gestion des erreurs
-Assurez-vous que les entrées utilisateur et les réponses du bot sont des chaînes de caractères valides. Si l'historique devient trop grand, le package compresse automatiquement les anciennes conversations pour économiser de la mémoire.
+- **compressed_memory(conv_hist: list) -> list**: Compresses the conversation history using a summarization model.
 
-# Modélisation Mathématique de la Gestion des Conversations
+## Error Handling
 
-Dans cette section, nous formalisons mathématiquement la gestion de la mémoire de conversation dans le chatbot. La mémoire est structurée comme une liste de paires représentant les échanges entre l'utilisateur et le bot.
+Ensure that user inputs and bot responses are valid strings. If the history becomes too large, the package automatically compresses older conversations to save memory.
 
-## Structure de la Mémoire de Conversation
+# Mathematical Modeling of Conversation Management
 
-La mémoire de conversation peut être définie comme une liste ordonnée de paires $(u_i, d_i)$, où $u_i$ représente l'entrée utilisateur et $d_i$ la réponse du bot pour le $i$-ième échange. Cette liste est notée $\mathcal{C}$ :
+In this section, we mathematically formalize conversation memory management in the chatbot. The memory is structured as a list of pairs representing exchanges between the user and the bot.
+
+## Conversation Memory Structure
+
+The conversation memory can be defined as an ordered list of pairs $(u_i, d_i)$, where $u_i$ represents the user input and $d_i$ the bot response for the $i$-th exchange. This list is denoted by $\mathcal{C}$:
 
 $$
 \mathcal{C} = [(u_1, d_1), (u_2, d_2), \ldots, (u_n, d_n)]
 $$
 
-où $n$ est le nombre total d'échanges dans l'historique actuel.
+where $n$ is the total number of exchanges in the current history.
 
-## Mise à Jour de la Mémoire
+## Memory Update
 
-Lorsqu'un nouvel échange se produit, une nouvelle paire $(u_{n+1}, d_{n+1})$ est ajoutée à la mémoire. Si la taille de $\mathcal{C}$ dépasse une limite maximale prédéfinie $M_{\text{max}}$, l'échange le plus ancien est retiré :
+When a new exchange occurs, a new pair $(u_{n+1}, d_{n+1})$ is added to the memory. If the size of $\mathcal{C}$ exceeds a predefined maximum limit $M_{\text{max}}$, the oldest exchange is removed:
 
 $$
 \mathcal{C} = 
@@ -72,34 +77,34 @@ $$
 \end{cases}
 $$
 
-## Comptage des Mots
+## Word Count
 
-Pour gérer l'espace de mémoire et décider quand la compression est nécessaire, nous calculons le nombre total de mots $W(\mathcal{C})$ dans la mémoire :
+To manage memory space and decide when compression is necessary, we calculate the total number of words $W(\mathcal{C})$ in memory:
 
 $$
 W(\mathcal{C}) = \sum_{(u_i, d_i) \in \mathcal{C}} (|u_i| + |d_i|)
 $$
 
-où $|u_i|$ et $|d_i|$ sont respectivement le nombre de mots dans $u_i$ et $d_i$.
+where $|u_i|$ and $|d_i|$ are respectively the number of words in $u_i$ and $d_i$.
 
-## Compression de la Mémoire
+## Memory Compression
 
-Lorsque $W(\mathcal{C})$ dépasse un seuil $W_{\text{max}}$, la mémoire est compressée pour maintenir la pertinence du contexte. Cette compression est réalisée par un modèle de résumé $\mathcal{S}$, tel que BART :
+When $W(\mathcal{C})$ exceeds a threshold $W_{\text{max}}$, the memory is compressed to maintain the relevance of the context. This compression is performed by a summarization model $\mathcal{S}$, such as BART:
 
 $$
 \mathcal{C}_{\text{compressed}} = \mathcal{S}(\mathcal{C})
 $$
 
-où $\mathcal{C}_{\text{compressed}}$ est la version résumée de la mémoire, réduisant le nombre total de mots tout en préservant l'essence des interactions passées.
+where $\mathcal{C}_{\text{compressed}}$ is the compressed version of the memory, reducing the total number of words while preserving the essence of past interactions.
 
-## Intégration dans le Modèle de Langage
+## Integration into the Language Model
 
-Le modèle de langage utilise le contexte compressé pour générer des réponses pertinentes. Le prompt $P$ utilisé par le modèle est construit comme suit :
+The language model uses the compressed context to generate relevant responses. The prompt $P$ used by the model is constructed as follows:
 
 $$
-P = f(\mathcal{C}_{\text{compressed}}, \text{contexte})
+P = f(\mathcal{C}_{\text{compressed}}, \text{context})
 $$
 
-où $\text{contexte}$ est le contexte supplémentaire récupéré à partir d'un pipeline RAG, et $f$ est une fonction de concaténation qui prépare le texte pour le modèle.
+where $\text{context}$ is additional context retrieved from a RAG pipeline, and $f$ is a concatenation function that prepares the text for the model.
 
-Cette approche assure que le chatbot dispose toujours d'un contexte conversationnel à jour, permettant des interactions plus naturelles et engageantes avec l'utilisateur.
+This approach ensures that the chatbot always has an up-to-date conversational context, enabling more natural and engaging interactions with the user.
