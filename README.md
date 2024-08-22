@@ -2,6 +2,50 @@
 
 Nous présentons ici une approche pour la gestion de la mémoire à court terme dans les chatbots, en utilisant une combinaison de techniques de stockage et de résumé automatique pour optimiser le contexte conversationnel. La méthode introduite repose sur une structure de mémoire dynamique qui limite la taille des données tout en préservant les informations essentielles à travers des résumés intelligents. Cette approche permet non seulement d'améliorer la fluidité des interactions mais aussi d'assurer une continuité contextuelle lors de longues sessions de dialogue. En outre, l'utilisation de techniques asynchrones garantit que les opérations de gestion de la mémoire n'interfèrent pas avec la réactivité du chatbot.
 
+# Utilisation du package `shortterm-memory`
+
+Cette section explique comment utiliser le package `shortterm-memory` pour gérer la mémoire d'un chatbot.
+
+## Installation
+```bash
+pip install shortterm-memory
+```
+```bash
+pip show shortterm-memory
+```
+## Usage
+```python
+from shortterm_memory.ChatbotMemory import ChatbotMemory
+```
+## Exemple
+```python	
+from shortterm_memory.ChatbotMemory import ChatbotMemory
+
+# Initialisation de la mémoire du chatbot
+chat_memory = ChatbotMemory()
+
+# Mettre à jour la mémoire avec un nouvel échange
+user_input = "Bonjour, comment allez-vous?"
+bot_response = "Je vais bien, merci ! Et vous ?"
+chat_memory.update_memory(user_input, bot_response)
+
+# Obtenir l'historique des conversations
+historique = chat_memory.get_memory()
+print(historique)
+```
+
+## Fonctionnalités disponibles
+- **update_memory(user_input: str, bot_response: str)** : Met à jour l'historique des conversations avec une nouvelle paire question-réponse.
+
+- **get_memory()** : Retourne l'historique complet des conversations sous forme de liste.
+
+- **memory_counter(conv_hist: list) -> int** : Compte le nombre total de mots dans l'historique des conversations.
+
+- **compressed_memory(conv_hist: list) -> list** : Comprime l'historique des conversations en utilisant un modèle de résumé.
+
+## Gestion des erreurs
+Assurez-vous que les entrées utilisateur et les réponses du bot sont des chaînes de caractères valides. Si l'historique devient trop grand, le package compresse automatiquement les anciennes conversations pour économiser de la mémoire.
+
 # Modélisation Mathématique de la Gestion des Conversations
 
 Dans cette section, nous formalisons mathématiquement la gestion de la mémoire de conversation dans le chatbot. La mémoire est structurée comme une liste de paires représentant les échanges entre l'utilisateur et le bot.
