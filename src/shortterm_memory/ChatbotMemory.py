@@ -1,5 +1,5 @@
 import torch
-from transformers import pipeline
+from transformers import pipeline, BartTokenizer, BartForConditionalGeneration
 import logging
 
 # Set device to GPU if available
@@ -13,6 +13,8 @@ MAX_MEMORY_SIZE:int = 2000
 class ChatbotMemory:
     def __init__(self, conv:list = []):
         self.conversation_history = conv
+        self.tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+        self.model = BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
 
     def update_memory(self, user_input:str, bot_response:str)->None:
         """
@@ -25,8 +27,8 @@ class ChatbotMemory:
         """
         self.conversation_history.append(f"'user': {user_input}, 'bot': {bot_response}")
         
-        if memory_counter(self.conversation_history) > 1000:
-            self.conversation_history = compressed_memory(self.conversation_history)
+        if self.memory_counter(self.conversation_history) > 1000:
+            self.conversation_history = self.compressed_memory(self.conversation_history)
             logging.info("Memory compressed.")
         
         if len(self.conversation_history) > MAX_MEMORY_SIZE:
@@ -43,43 +45,49 @@ class ChatbotMemory:
         """
         return self.conversation_history
     
-def _get_compressed_memory(sentence:str)->str:
-    """
-    Compresses the input sentence using the Facebook BART model for summarization.
-
-    Args:
-        sentence: The input sentence to be compressed.
-
-    Returns:
-        str: The compressed summary of the input sentence.
-    """
-    summarizer:str = pipeline("summarization",model="facebook/bart-large-cnn",device=device)
-    summary:str = summarizer(sentence, max_length=50, min_length=5, do_sample=False)
-    return summary[0]['summary_text']
-
-def compressed_memory(conv_hist:list)->list:
-    """
-    Compresses each sentence in the conversation history list using summarization.
-
-    Args:
-        conv_hist: List of sentences representing the conversation history.
-
-    Returns:
-        list: List of compressed summaries for each sentence in the conversation history.
-    """
-    # return [_get_compressed_memory(sentence) for sentence in conv_hist]
-    return [_get_compressed_memory(' '.join(conv_hist[i:i+5])) for i in range(0, len(conv_hist), 5)]
+    def _get_compressed_memory(self, text):
         
+        inputs = self.tokenizer.encode("summarize: " + text, return_tensors="pt", max_length=1024, truncation=True)
+        summary_ids = self.model.generate(inputs, max_length=150, min_length=40, length_penalty=2.0, num_beams=4, early_stopping=True)
+        summary = self.tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+        return summary
+# def _get_compressed_memory(sentence:str)->str:
+#     """
+#     Compresses the input sentence using the Facebook BART model for summarization.
 
-def memory_counter(conv_hist:list)->int:
-    """
-    Counts the total number of words in the conversation history list.
+#     Args:
+#         sentence: The input sentence to be compressed.
 
-    Args:
-        conv_hist: List of sentences representing the conversation history.
+#     Returns:
+#         str: The compressed summary of the input sentence.
+#     """
+#     summarizer:str = pipeline("summarization",model="facebook/bart-large-cnn",device=device)
+#     summary:str = summarizer(sentence, max_length=50, min_length=5, do_sample=False)
+#     return summary[0]['summary_text']
 
-    Returns:
-        int: Total number of words in the conversation history.
-    """
-    st = ''.join(conv_hist)
-    return len(st.split())
+    def compressed_memory(self, conv_hist:list)->list:
+        """
+        Compresses each sentence in the conversation history list using summarization.
+
+        Args:
+            conv_hist: List of sentences representing the conversation history.
+
+        Returns:
+            list: List of compressed summaries for each sentence in the conversation history.
+        """
+        # return [_get_compressed_memory(sentence) for sentence in conv_hist]
+        return [self._get_compressed_memory(' '.join(conv_hist[i:i+5])) for i in range(0, len(conv_hist), 5)]
+
+
+    def memory_counter(conv_hist:list)->int:
+        """
+        Counts the total number of words in the conversation history list.
+
+        Args:
+            conv_hist: List of sentences representing the conversation history.
+
+        Returns:
+            int: Total number of words in the conversation history.
+        """
+        st = ''.join(conv_hist)
+        return len(st.split())
