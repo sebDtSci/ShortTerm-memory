@@ -8,7 +8,7 @@ if torch.cuda.is_available():
 else:
     device:int = -1
 
-MAX_MEMORY_SIZE:int = 100 #2000
+MAX_MEMORY_SIZE:int = 2000
 
 class ChatbotMemory:
     def __init__(self, conv:list = []):
