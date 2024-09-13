@@ -8,7 +8,7 @@ if torch.cuda.is_available():
 else:
     device:int = -1
 
-MAX_MEMORY_SIZE:int = 2000
+MAX_MEMORY_SIZE:int = 100 #2000
 
 class ChatbotMemory:
     def __init__(self, conv:list = []):
@@ -79,7 +79,7 @@ class ChatbotMemory:
         return [self._get_compressed_memory(' '.join(conv_hist[i:i+5])) for i in range(0, len(conv_hist), 5)]
 
 
-    def memory_counter(conv_hist:list)->int:
+    def memory_counter(self, conv_hist:list[str])->int:
         """
         Counts the total number of words in the conversation history list.
 
@@ -91,3 +91,58 @@ class ChatbotMemory:
         """
         st = ''.join(conv_hist)
         return len(st.split())
+
+if __name__ == "__main__":
+    chat_memory = ChatbotMemory()
+    user_input = "Bonjour, comment allez-vous?"
+    bot_response = "Je vais bien, merci ! Et vous ?"
+    chat_memory.update_memory(user_input, bot_response)
+
+    # Obtenir l'historique des conversations
+    historique = chat_memory.get_memory()
+    print(historique)
+    
+    user_input = "écris un poème de 300 mots"
+    bot_response = "\
+    L’écho des mondes\
+    Sous l’éclat argenté d’une lune éternelle,\
+    Les murmures du vent dansent, doux et rebelles.\
+    Ils transportent des rêves, des promesses lointaines,\
+    Effleurant l’horizon de montagnes anciennes.\
+    \
+    Dans la forêt profonde, les arbres se confient,\
+    Leurs racines tissent des récits infinis.\
+    Chaque feuille, chaque branche, porte un secret du temps,\
+    Un souffle de sagesse, une parole en suspens.\
+    \
+    Les rivières murmurent en suivant leur chemin,\
+    Leurs eaux claires reflètent le bleu du matin.\
+    Elles emportent les peines, les joies et les cris,\
+    Traversant les âges, ignorant les périls.\
+    \
+    Le soleil se lève, doré, majestueux,\
+    Réveillant la terre d’un sommeil lumineux.\
+    Il peint des ombres dansantes sur les collines,\
+    Offrant à chaque instant des lueurs divines.\
+    \
+    Dans ce vaste univers où tout semble figé,\
+    Les étoiles veillent, telles des âmes égarées.\
+    Elles brillent de loin, gardiennes silencieuses,\
+    De secrets millénaires et de vies mystérieuses.\
+    \
+    Chaque battement de cœur, chaque souffle d’air,\
+    Est un fragment du tout, un lien universel.\
+    Nous marchons sur ce fil, entre ombre et lumière,\
+    Cherchant notre place dans cette grande sphère.\
+    \
+    Et dans le silence, là où tout se résout,\
+    L’écho des mondes résonne, doux mais flou.\
+    Il nous rappelle que l’immensité est en nous,\
+    Et que, dans chaque instant, réside l’infini goût.\
+    \
+    Le temps s’efface, les frontières se dissolvent,\
+    Dans ce ballet cosmique où les âmes s’envolent.\
+    Nous sommes poussière d’étoile, brève, éphémère,\
+    Mais dans l’éternité, notre essence prospère."
+    
+    chat_memory.update_memory(user_input, bot_response)
